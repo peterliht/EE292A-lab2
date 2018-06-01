@@ -42,20 +42,21 @@
 #define SOFTMAX_NODE_DIM 10
 
 // TODO: If you decide you'd like to write helper functions, you can define them here
-void PaddingLayer(local float * restrict inputs, local float * restrict outputs, int in_dim, int in_channels, int pad_dim)
+void PaddingLayer(local float * restrict inputs, local float * restrict outputs, const int in_dim,
+                  const int in_channels, const int pad_dim)
 {
-    int out_dim = in_dim + pad_dim * 2;
-	int out_channels = in_channels;
+    const int out_dim = in_dim + pad_dim * 2;
+	const int out_channels = in_channels;
 	for (int row = 0; row < out_dim; row++)
 	{
 		for (int col = 0; col < out_dim; col++)
 		{
 			for (int channel = 0; channel < out_channels; channel++)
 			{
-				int out_index = row * out_channels * out_dim + col * out_channels + channel;
+				const int out_index = row * out_channels * out_dim + col * out_channels + channel;
 				if (row >= pad_dim && col >= pad_dim && row < in_dim + pad_dim && col < in_dim + pad_dim)
 				{
-					int in_index = (row - pad_dim) * in_dim * in_channels
+					const int in_index = (row - pad_dim) * in_dim * in_channels
                                  + (col - pad_dim) * in_dim * in_channels + out_channels;
 					outputs[out_index] = inputs[in_index];
 				}
@@ -72,22 +73,22 @@ void PaddingLayer(local float * restrict inputs, local float * restrict outputs,
 void PaddingImage(global const unsigned char * inputs, local float * restrict outputs,
 				  int in_dim, int in_channels, int pad_dim)
 {
-	int out_dim = in_dim + pad_dim * 2;
-	int out_channels = in_channels;
+    const int out_dim = in_dim + pad_dim * 2;
+	const int out_channels = in_channels;
 	for (int row = 0; row < out_dim; row++)
 	{
 		for (int col = 0; col < out_dim; col++)
 		{
 			for (int channel = 0; channel < out_channels; channel++)
 			{
-				int out_index = row * out_channels * out_dim + col * out_channels + channel;
+				const int out_index = row * out_channels * out_dim + col * out_channels + channel;
 				if (row >= pad_dim && col >= pad_dim && row < in_dim + pad_dim && col < in_dim + pad_dim)
 				{
-					int in_index = (row - pad_dim) * in_dim * in_channels
-								 + (col - pad_dim) * in_dim * in_channels + out_channels;
+					const int in_index = (row - pad_dim) * in_dim * in_channels
+                                 + (col - pad_dim) * in_dim * in_channels + out_channels;
 					outputs[out_index] = inputs[in_index];
 				}
-				else 
+				else
                 {
                     outputs[out_index] = 0.0;
                 }
@@ -98,10 +99,10 @@ void PaddingImage(global const unsigned char * inputs, local float * restrict ou
 
 void ConvLayer(constant float * restrict weights, constant float * restrict bias,
 				local constant float * restrict inputs, local float * restrict outputs,
-				int in_dim, int in_channels, int filter_dim, int num_filters)
+				const int in_dim, const int in_channels, const int filter_dim, const int num_filters)
 {
-	int out_dim = in_dim - filter_dim + 1;
-	int out_channels = in_channels;
+	const int out_dim = in_dim - filter_dim + 1;
+	const int out_channels = in_channels;
 	float dotprod = 0.0;
 	// float receptive_inputs = 0;
 	// float filter_weights = 0;
@@ -144,10 +145,10 @@ float ReLU(float input)
 
 
 void MaxPool(local constant float * restrict inputs, local float * restrict outputs,
-			 int in_dim, int in_channels, int pool_dim, int pool_stride)
+			 const int in_dim, const int in_channels, const int pool_dim, const int pool_stride)
 {
-	int out_dim = in_dim / pool_stride; 
-	int out_channels = in_channels;
+	const int out_dim = in_dim / pool_stride; 
+	const int out_channels = in_channels;
 	float current_max = -9992012210; // some random value....should be enough?
 	float pool_window = 0.0;
 	for (int row = 0; row < in_dim; row += pool_stride)
@@ -161,7 +162,7 @@ void MaxPool(local constant float * restrict inputs, local float * restrict outp
 				{
 					for (int j = 0; j < pool_dim; j++)
 					{
-						int idx = (row + i) * in_channels * in_dim + (col + j) * in_channels + ch;
+						const int idx = (row + i) * in_channels * in_dim + (col + j) * in_channels + ch;
 						pool_window = inputs[idx];
 						if (pool_window > current_max)
 						{
@@ -169,7 +170,7 @@ void MaxPool(local constant float * restrict inputs, local float * restrict outp
 						}
 					}
 				}
-				int out_index = (row / pool_stride) * out_channels * out_dim
+				const int out_index = (row / pool_stride) * out_channels * out_dim
 							  + (col / pool_stride) * out_channels * ch;
 				outputs[out_index] = current_max;
 			}
@@ -179,8 +180,8 @@ void MaxPool(local constant float * restrict inputs, local float * restrict outp
 
 
 void DenseLayer(constant float * restrict weights, constant float * restrict bias,
-				local const * restrict inputs, local float * restrict outputs,
-				int in_dim, int in_channels, int out_dim, bool isFinalLayer)
+				local const float * restrict inputs, local float * restrict outputs,
+				const int in_dim, const int in_channels, const int out_dim, bool isFinalLayer)
 {
 	float dotprod = 0.0;
 	float neuron_output = 0.0;
@@ -193,8 +194,8 @@ void DenseLayer(constant float * restrict weights, constant float * restrict bia
 			{
 				for (int ch = 0; ch < in_channels; ch++)
 				{
-					int in_index = row * in_dim + in_channels + col * in_channels + ch;
-					int weight_index = row * in_dim * in_channels * out_dim + col * in_channels
+					const int in_index = row * in_dim + in_channels + col * in_channels + ch;
+					const int weight_index = row * in_dim * in_channels * out_dim + col * in_channels
 									 * out_dim + ch * out_dim + l;
 					dotprod += inputs[in_index] * weights[weight_index];
 				}
@@ -228,15 +229,15 @@ __kernel void linear_classifier(global const unsigned char * restrict images,
 {
 	global const unsigned char * image = &images[get_global_id(0) * IMG_SIZE];
 
-	float padded_img[IMG_PADDED_SIZE];
-	float conv1_out[MAXPOOL1_SIZE];
-	float maxpool1_out[MAXPOOL1_OUT_SIZE];
-	float conv2_in[CONV2_IN_SIZE];
-	float conv2_out[MAXPOOL2_SIZE];
-	float dense1_in[DENSE1_SIZE];
-	float dense2_in[DENSE2_IN_SIZE];
-	float softmax_node[SOFTMAX_NODE_DIM];
-	float neuron_max = -99920120210;
+	local float padded_img[IMG_PADDED_SIZE];
+	local float conv1_out[MAXPOOL1_SIZE];
+	local float maxpool1_out[MAXPOOL1_OUT_SIZE];
+	local float conv2_in[CONV2_IN_SIZE];
+	local float conv2_out[MAXPOOL2_SIZE];
+	local float dense1_in[DENSE1_SIZE];
+	local float dense2_in[DENSE2_IN_SIZE];
+	local float softmax_node[SOFTMAX_NODE_DIM];
+	local float neuron_max = -99920120210;
 	int predict = -999;  // for debugging purpose
 
 
