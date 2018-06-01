@@ -9,6 +9,7 @@
 #include "AOCLUtils/aocl_utils.h"
 #include "../../shared/defines.h"
 #include "../../shared/utils.h"
+#include "assert.h"
 
 // TODO: If you want to define constants, you can do it here
 #define CONV1_WEIGHT_SIZE (5 * 5 * 1 * 32)   // filter size * channel * num_filters
