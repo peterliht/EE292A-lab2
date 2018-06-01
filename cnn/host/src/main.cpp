@@ -113,7 +113,8 @@ int main(int argc, char **argv) {
 	dense2_b = (cl_float*)alignedMalloc(sizeof(cl_float) * DENSE2_BIAS_COUNT);
 
 	// TODO: Read in weights from weights files
-	read_weights_file("weights/conv1_weights", conv1_w, CONV1_WEIGHT_SIZE);
+	bool check = read_weights_file("weights/conv1_weights", conv1_w, CONV1_WEIGHT_SIZE);
+    assert(check);
 	read_weights_file("weights/conv1_bias", conv1_b, CONV1_BIAS_COUNT);
 	read_weights_file("weights/conv2_weights", conv2_w, CONV2_WEIGHT_SIZE);
 	read_weights_file("weights/conv2_bias", conv2_b, CONV2_BIAS_COUNT);

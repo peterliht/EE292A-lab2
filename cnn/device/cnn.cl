@@ -45,8 +45,8 @@
 
 float ReLU(float input)
 {
-	if (input < 0.0)
-		return 0.0;
+	if (input < 0.)
+		return 0.;
 	else
 		return input;
 }
@@ -112,8 +112,8 @@ void ConvLayer(constant float * restrict weights, constant float * restrict bias
 				const int in_dim, const int in_channels, const int filter_dim, const int num_filters)
 {
 	const int out_dim = in_dim - filter_dim + 1;
-	const int out_channels = in_channels;
-	float dotprod = 0.0;
+	const int out_channels = num_filters;
+	// float dotprod = 0.0;
 	// float receptive_inputs = 0;
 	// float filter_weights = 0;
 	for (int k = 0; k < num_filters; k++)
@@ -122,23 +122,28 @@ void ConvLayer(constant float * restrict weights, constant float * restrict bias
 		{
 			for (int col = 0; col < out_dim; col++)
 			{
-				dotprod = 0.0;
+				float dotprod = 0;
 				for (int ch = 0; ch < in_channels; ch++)
 				{
 					for (int i_filter = 0; i_filter < filter_dim; i_filter++)
 					{
 						for (int j_filter = 0; j_filter < filter_dim; j_filter++)
 						{
-							const int idx_receptive_inputs = (col + i_filter) * in_dim * in_channels 
-                                                           + (row + j_filter) * in_channels + ch;
-							const int idx_filter_weights = i_filter * filter_dim * in_channels * num_filters
+							// const int idx_receptive_inputs = (col + i_filter) * in_dim * in_channels 
+                            //                                + (row + j_filter) * in_channels + ch;
+							// const int idx_filter_weights = i_filter * filter_dim * in_channels * num_filters
+							// 					         + j_filter * in_channels * num_filters 
+							// 					         + ch * num_filters + k;
+							// dotprod += inputs[idx_receptive_inputs] * weights[idx_filter_weights];
+							float receptive_inputs = inputs[(col + i_filter) * in_dim * in_channels + (row + j_filter) * in_channels + ch];
+							float filter_weights = weights[i_filter * filter_dim * in_channels * num_filters
 												         + j_filter * in_channels * num_filters 
-												         + ch * num_filters + k;
-							dotprod += inputs[idx_receptive_inputs] * weights[idx_filter_weights];
+												         + ch * num_filters + k];
+							dotprod += receptive_inputs + filter_weights;
 						}
 					}
 				}
-				outputs[k + row * num_filters + col * num_filters * out_dim] = ReLU(dotprod + bias[k]);
+				outputs[k + row * out_channels + col * out_channels * out_dim] = ReLU(dotprod + bias[k]);
 			}
 		}
 	}
@@ -150,21 +155,22 @@ void MaxPool(local const float * restrict inputs, local float * restrict outputs
 {
 	const int out_dim = in_dim / pool_stride; 
 	const int out_channels = in_channels;
-	float current_max = -9992012210; // some random value....should be enough?
-	float pool_window = 0.0;
+	// float current_max = -INFINITY; // some random value....should be enough?
+	// float pool_window = 0;
+
 	for (int row = 0; row < in_dim; row += pool_stride)
 	{
 		for (int col = 0; col < in_dim; col += pool_stride)
 		{
 			for (int ch = 0; ch < in_channels; ch++)
 			{
-				current_max = -9992012210;
+				float current_max = -INFINITY;
 				for (int i = 0; i < pool_dim; i++)
 				{
 					for (int j = 0; j < pool_dim; j++)
 					{
 						const int idx = (row + i) * in_channels * in_dim + (col + j) * in_channels + ch;
-						pool_window = inputs[idx];
+						float pool_window = inputs[idx];
 						if (pool_window > current_max)
 						{
 							current_max = pool_window;
