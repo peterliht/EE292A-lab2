@@ -42,6 +42,15 @@
 #define SOFTMAX_NODE_DIM 10
 
 // TODO: If you decide you'd like to write helper functions, you can define them here
+
+float ReLU(float input)
+{
+	if (input < 0.0)
+		return 0.0;
+	else
+		return input;
+}
+
 void PaddingLayer(local float * restrict inputs, local float * restrict outputs, const int in_dim,
                   const int in_channels, const int pad_dim)
 {
@@ -85,7 +94,7 @@ void PaddingImage(global const unsigned char * inputs, local float * restrict ou
 				if (row >= pad_dim && col >= pad_dim && row < in_dim + pad_dim && col < in_dim + pad_dim)
 				{
 					const int in_index = (row - pad_dim) * in_dim * in_channels
-                                 + (col - pad_dim) * in_dim * in_channels + out_channels;
+                                       + (col - pad_dim) * in_dim * in_channels + out_channels;
 					outputs[out_index] = inputs[in_index];
 				}
 				else
@@ -98,7 +107,7 @@ void PaddingImage(global const unsigned char * inputs, local float * restrict ou
 }
 
 void ConvLayer(constant float * restrict weights, constant float * restrict bias,
-				local constant float * restrict inputs, local float * restrict outputs,
+				local const float * restrict inputs, local float * restrict outputs,
 				const int in_dim, const int in_channels, const int filter_dim, const int num_filters)
 {
 	const int out_dim = in_dim - filter_dim + 1;
@@ -135,16 +144,7 @@ void ConvLayer(constant float * restrict weights, constant float * restrict bias
 }
 
 
-float ReLU(float input)
-{
-	if (input < 0.0)
-		return 0.0;
-	else
-		return input;
-}
-
-
-void MaxPool(local constant float * restrict inputs, local float * restrict outputs,
+void MaxPool(local const float * restrict inputs, local float * restrict outputs,
 			 const int in_dim, const int in_channels, const int pool_dim, const int pool_stride)
 {
 	const int out_dim = in_dim / pool_stride; 
@@ -237,7 +237,7 @@ __kernel void linear_classifier(global const unsigned char * restrict images,
 	local float dense1_in[DENSE1_SIZE];
 	local float dense2_in[DENSE2_IN_SIZE];
 	local float softmax_node[SOFTMAX_NODE_DIM];
-	local float neuron_max = -99920120210;
+	float neuron_max = -99920120210;
 	int predict = -999;  // for debugging purpose
 
 
