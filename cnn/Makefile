@@ -25,6 +25,69 @@
 # See http://www.altera.com/literature/hb/opencl-sdk/aocl_getting_started.pdf 
 # for more information on installing and configuring the Intel(R) FPGA SDK for OpenCL(TM).
 
+# ifeq ($(VERBOSE),1)
+# ECHO := 
+# else
+# ECHO := @
+# endif
+
+# # Where is the Intel(R) FPGA SDK for OpenCL(TM) software?
+# ifeq ($(wildcard $(ALTERAOCLSDKROOT)),)
+# $(error Set ALTERAOCLSDKROOT to the root directory of the Intel(R) FPGA SDK for OpenCL(TM) software installation)
+# endif
+# ifeq ($(wildcard $(ALTERAOCLSDKROOT)/host/include/CL/opencl.h),)
+# $(error Set ALTERAOCLSDKROOT to the root directory of the Intel(R) FPGA SDK for OpenCL(TM) software installation.)
+# endif
+
+# # OpenCL compile and link flags.
+# AOCL_COMPILE_CONFIG := $(shell aocl compile-config )
+# AOCL_LINK_CONFIG := $(shell aocl link-config )
+
+# # Compilation flags
+# ifeq ($(DEBUG),1)
+# CXXFLAGS += -g
+# else
+# CXXFLAGS += -O2
+# endif
+
+# # Compiler
+# CXX := g++
+
+# # Target
+# TARGET := host
+# TARGET_DIR := bin
+
+# # Directories
+# INC_DIRS := host/inc ../common/inc ../shared  ../extlibs/inc
+# LIB_DIRS := ../extlibs/lib
+
+# # Files
+# INCS := $(wildcard host/inc/*.h)
+# SRCS := $(wildcard host/src/*.cpp ../common/src/AOCLUtils/*.cpp ../shared/*.cpp)
+# # LIBS := SDL2 rt pthread
+# LIBS := rt pthread
+
+# # Make it all!
+# all : $(TARGET_DIR)/$(TARGET)
+
+# # Host executable target.
+# $(TARGET_DIR)/$(TARGET) : Makefile $(SRCS) $(INCS) $(TARGET_DIR)
+# 	$(ECHO)$(CXX) $(CPPFLAGS) $(CXXFLAGS) -fPIC $(foreach D,$(INC_DIRS),-I$D) \
+# 			$(AOCL_COMPILE_CONFIG) $(SRCS) $(AOCL_LINK_CONFIG) \
+# 			$(foreach D,$(LIB_DIRS),-L$D) \
+# 			$(foreach L,$(LIBS),-l$L) \
+# 			-o $(TARGET_DIR)/$(TARGET)
+
+# $(TARGET_DIR) :
+# 	$(ECHO)mkdir $(TARGET_DIR)
+	
+# # Standard make targets
+# clean :
+# 	$(ECHO)rm -f $(TARGET_DIR)/$(TARGET)
+
+# .PHONY : all clean
+
+
 ifeq ($(VERBOSE),1)
 ECHO := 
 else
@@ -68,7 +131,7 @@ SRCS := $(wildcard host/src/*.cpp ../common/src/AOCLUtils/*.cpp ../shared/*.cpp)
 LIBS := rt pthread
 
 # Make it all!
-all : $(TARGET_DIR)/$(TARGET)
+all : $(TARGET_DIR)/$(TARGET) device
 
 # Host executable target.
 $(TARGET_DIR)/$(TARGET) : Makefile $(SRCS) $(INCS) $(TARGET_DIR)
@@ -80,6 +143,13 @@ $(TARGET_DIR)/$(TARGET) : Makefile $(SRCS) $(INCS) $(TARGET_DIR)
 
 $(TARGET_DIR) :
 	$(ECHO)mkdir $(TARGET_DIR)
+
+# Make opencl device code
+.PHONY: device
+device: $(TARGET_DIR)/cnn_emu.aocx
+	
+$(TARGET_DIR)/cnn_emu.aocx: device/cnn.cl
+	aoc -march=emulator -v -board-package=$(INTELFPGAOCLSDKROOT)/board/s5_ref $^ -o $@
 	
 # Standard make targets
 clean :
