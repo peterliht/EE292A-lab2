@@ -51,7 +51,7 @@ void write_weights_file(char *filename, float *weights, int num_weights) {
 // This function is modified to cope with different weight sizes in CNN
 // Important note: weight files are in text instead of binary format!! (different from Lab1)
 // Ref: https://piazza.com/class/jfmtldn1vux3z5?cid=88
-bool read_weights_file(const char *filename, float *weights, size_t weight_size)
+bool read_weights_file(const char *filename, float *weights, int weight_size)
 {
 	ifstream weightFile;
 	weightFile.open(filename);
