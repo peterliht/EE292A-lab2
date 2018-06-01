@@ -688,7 +688,7 @@ __kernel void linear_classifier(global const unsigned char * restrict images,
   pad_layer(maxpool1_output, conv2_input,
       14, 14, 32, 2, 2);
 
-  //print_buffer("%09.6f, ", conv2_input, 18, 18, 32);
+//   print_buffer("%09.6f, ", conv2_input, 18, 18, 32);
   
   /* CONV LAYER 2 */
   local float maxpool2_input[MAXPOOL2_INPUT];
@@ -697,7 +697,7 @@ __kernel void linear_classifier(global const unsigned char * restrict images,
       18, 18, 32,
       5, 5, 64);
 
-  //print_buffer("%06.2f, ", maxpool2_input, 14, 14, 64);
+  print_buffer("%06.2f, ", maxpool2_input, 14, 14, 64);
   
   /* MAXPOOL LAYER 2 */
   local float dense1_input[DENSE1_INPUT];
