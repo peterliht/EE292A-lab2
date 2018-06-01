@@ -66,7 +66,7 @@ void PaddingLayer(local float * restrict inputs, local float * restrict outputs,
 				if (row >= pad_dim && col >= pad_dim && (row < in_dim + pad_dim) && (col < in_dim + pad_dim))
 				{
 					const int in_index = (row - pad_dim) * in_dim * in_channels
-                                       + (col - pad_dim) * in_dim * in_channels + out_channels;
+                                       + (col - pad_dim) * in_channels + ch; //2 bugs fixed here
 					outputs[out_index] = inputs[in_index];
 				}
 				else
@@ -95,7 +95,7 @@ void PaddingImage(global const unsigned char * inputs, local float * restrict ou
 				if (row >= pad_dim && col >= pad_dim && (row < in_dim + pad_dim) && (col < in_dim + pad_dim))
 				{
 					const int in_index = (row - pad_dim) * in_dim * in_channels
-                                       + (col - pad_dim) * in_dim * in_channels + out_channels;
+                                       + (col - pad_dim) * in_channels + ch; //2 bugs fixed here
 					outputs[out_index] = inputs[in_index];
 				}
 				else
@@ -105,7 +105,7 @@ void PaddingImage(global const unsigned char * inputs, local float * restrict ou
 			}
 		}
 	}
-}
+} 
 
 void ConvLayer(constant float * restrict weights, constant float * restrict bias,
 				local const float * restrict inputs, local float * restrict outputs,
