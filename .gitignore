@@ -1,4 +1,5 @@
 cnn/bin/*.aoco
 cnn/bin/*.aocx
 cnn/bin/cnn_emu/
+cnn/bin/cnn/
 .vscode
