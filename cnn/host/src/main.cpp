@@ -316,7 +316,6 @@ void cleanup() {
 	teardown(-1);
 }
 
-// seems to need to free conv/dense weight/bias here?  
 void teardown(int exit_status) {
 	if(kernel) clReleaseKernel(kernel);
 	if(queue) clReleaseCommandQueue(queue);

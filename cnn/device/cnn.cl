@@ -58,10 +58,13 @@ void PaddingLayer(local float * restrict inputs, local float * restrict outputs,
 {
     const int out_dim = in_dim + pad_dim * 2;
 	const int out_channels = in_channels;
+    #pragma unroll
 	for (int row = 0; row < out_dim; row++)
 	{
+        #pragma unroll
 		for (int col = 0; col < out_dim; col++)
 		{
+            #pragma unroll
 			for (int ch = 0; ch < out_channels; ch++)
 			{
 				const int out_index = row * out_channels * out_dim + col * out_channels + ch;
@@ -89,10 +92,13 @@ void PaddingImage(global const unsigned char * inputs, local float * restrict ou
 {
     const int out_dim = in_dim + pad_dim * 2;
 	const int out_channels = in_channels;
+    #pragma unroll
 	for (int row = 0; row < out_dim; row++)
 	{
+        #pragma unroll
 		for (int col = 0; col < out_dim; col++)
 		{
+            #pragma unroll
 			for (int ch = 0; ch < out_channels; ch++)
 			{
 				const int out_index = row * out_channels * out_dim + col * out_channels + ch;
@@ -119,20 +125,29 @@ void ConvLayer(constant float * restrict weights, constant float * restrict bias
 {
 	const int out_dim = in_dim - filter_dim + 1;
 	const int out_channels = num_filters;
-	// float dotprod = 0.0;
-	// float receptive_inputs = 0;
-	// float filter_weights = 0;
+	float dotprod = 0;
+	float receptive_inputs = 0;
+	float filter_weights = 0;
+
+
+    #pragma unroll
+
 	for (int k = 0; k < num_filters; k++)
 	{
+        #pragma unroll
 		for (int row = 0; row < out_dim; row++)
 		{
+            #pragma unroll
 			for (int col = 0; col < out_dim; col++)
 			{
-				float dotprod = 0;
+				dotprod = 0;
+                #pragma unroll
 				for (int ch = 0; ch < in_channels; ch++)
 				{
+                    #pragma unroll
 					for (int i_filter = 0; i_filter < filter_dim; i_filter++)
 					{
+                        #pragma unroll
 						for (int j_filter = 0; j_filter < filter_dim; j_filter++)
 						{
 							// const int idx_receptive_inputs = (col + i_filter) * in_dim * in_channels 
@@ -141,8 +156,8 @@ void ConvLayer(constant float * restrict weights, constant float * restrict bias
 							// 					         + j_filter * in_channels * num_filters 
 							// 					         + ch * num_filters + k;
 							// dotprod += inputs[idx_receptive_inputs] * weights[idx_filter_weights];
-							float receptive_inputs = inputs[(col + i_filter) * in_dim * in_channels + (row + j_filter) * in_channels + ch];
-							float filter_weights = weights[i_filter * filter_dim * in_channels * num_filters
+							receptive_inputs = inputs[(col + i_filter) * in_dim * in_channels + (row + j_filter) * in_channels + ch];
+							filter_weights = weights[i_filter * filter_dim * in_channels * num_filters
 												         + j_filter * in_channels * num_filters 
 												         + ch * num_filters + k];
 							dotprod += receptive_inputs * filter_weights; // bug catched: should be "*"!!
@@ -161,22 +176,28 @@ void MaxPool(local const float * restrict inputs, local float * restrict outputs
 {
 	const int out_dim = in_dim / pool_stride; 
 	const int out_channels = in_channels;
-	// float current_max = -INFINITY; // some random value....should be enough?
-	// float pool_window = 0;
+	float current_max = -99920120210999;   //some random number...
+	float pool_window = 0;
 
-	for (int row = 0; row < in_dim; row += pool_stride)
+    #pragma unroll
+	
+    for (int row = 0; row < in_dim; row += pool_stride)
 	{
+        #pragma unroll
 		for (int col = 0; col < in_dim; col += pool_stride)
 		{
+            #pragma unroll
 			for (int ch = 0; ch < in_channels; ch++)
 			{
-				float current_max = -INFINITY;
+				current_max = -99920120210999;
+                #pragma unroll
 				for (int i = 0; i < pool_dim; i++)
 				{
+                    #pragma unroll
 					for (int j = 0; j < pool_dim; j++)
 					{
 						const int idx = (row + i) * in_channels * in_dim + (col + j) * in_channels + ch;
-						float pool_window = inputs[idx];
+						pool_window = inputs[idx];
 						if (pool_window > current_max)
 						{
 							current_max = pool_window;
@@ -198,13 +219,18 @@ void DenseLayer(constant float * restrict weights, constant float * restrict bia
 {
 	// float dotprod = 0.0;
 	// float neuron_output = 0.0;
+    #pragma unroll
+
 	for (int l = 0; l < out_dim; l++)
 	{
 		float dotprod = 0;
+        #pragma unroll
 		for (int row = 0; row < in_dim; row++)
 		{
+            #pragma unroll
 			for (int col = 0; col < in_dim; col++)
 			{
+                #pragma unroll
 				for (int ch = 0; ch < in_channels; ch++)
 				{
 					// const int in_index = row * in_dim + in_channels + col * in_channels + ch;
@@ -230,19 +256,6 @@ void DenseLayer(constant float * restrict weights, constant float * restrict bia
 	}
 }
 
-
-void print_buffer(const char* fmt, local const float * restrict buffer,
-    const int width, const int height, const int channels) {
-  for (int w = 0; w < width; w++) {
-    for (int h = 0; h < height; h++) {
-      for (int c = 0; c < 1; c++) {
-        printf(fmt, buffer[w * height * channels + h * channels + c]);
-      }
-    }
-    printf("\n");
-  }
-}
-
 // TODO: Build a CNN!
 __attribute__((reqd_work_group_size(100,1,1))) // change this to change workgroup size
 __kernel void linear_classifier(global const unsigned char * restrict images, 
@@ -259,97 +272,57 @@ __kernel void linear_classifier(global const unsigned char * restrict images,
 	global const unsigned char * image = &images[get_global_id(0) * IMG_SIZE];
 
     // setting local variables for the inter-layer data forward pass
-	// local float padded_img[IMG_PADDED_SIZE];
-	// local float conv1_out[MAXPOOL1_SIZE];
-	// local float maxpool1_out[MAXPOOL1_OUT_SIZE];
-	// local float conv2_in[CONV2_IN_SIZE];
-	// local float conv2_out[MAXPOOL2_SIZE];
-	// local float dense1_in[DENSE1_SIZE];
-	// local float dense2_in[DENSE2_IN_CHANNELS];
-	// local float softmax_node[SOFTMAX_NODE_DIM];
-	// // float neuron_max = -99920120210;
-    // float neuron_max = -INFINITY;
-	// int predict = -1;  // for debugging purpose
+	local float padded_img[IMG_PADDED_SIZE];
+	local float conv1_out[MAXPOOL1_SIZE];
+	local float maxpool1_out[MAXPOOL1_OUT_SIZE];
+	local float conv2_in[CONV2_IN_SIZE];
+	local float conv2_out[MAXPOOL2_SIZE];
+	local float dense1_in[DENSE1_SIZE];
+	local float dense2_in[DENSE2_IN_CHANNELS];
+	local float softmax_node[SOFTMAX_NODE_DIM];
+	// float neuron_max = -99920120210;
+    float neuron_max = -INFINITY;
+	int predict = -1;  // for debugging purpose
 
 
 	/* CONV LAYER 1 */
-    local float padded_img[IMG_PADDED_SIZE];
 	PaddingImage(image, padded_img, IMG_DIM, 1, 2);
 
-    local float conv1_out[MAXPOOL1_SIZE];
 	ConvLayer(conv1_weights, conv1_bias, padded_img, conv1_out, IMG_PADDED_DIM, 1, CONV1_FILTER_DIM,
 			  CONV1_NUM_FILTERS);
 
 	/* MAXPOOL LAYER 1 PLUS PADDING */
-    local float maxpool1_out[MAXPOOL1_OUT_SIZE];
 	MaxPool(conv1_out, maxpool1_out, MAXPOOL1_DIM, MAXPOOL1_CHANNELS, WINDOW, STRIDE);
-    local float conv2_in[CONV2_IN_SIZE];
+
 	PaddingLayer(maxpool1_out, conv2_in, MAXPOOL1_DIM/2, MAXPOOL1_CHANNELS, PAD_SIZE);
 
 	/* CONV LAYER 2 */
-    local float conv2_out[MAXPOOL2_SIZE];
 	ConvLayer(conv2_weights, conv2_bias, conv2_in, conv2_out, CONV2_IN_PADDED_DIM, CONV2_IN_CHANNELS,
 			  CONV2_FILTER_DIM, CONV2_NUM_FILTERS);
 
 	/* MAXPOOL LAYER 2 */
-    local float dense1_in[DENSE1_SIZE];
 	MaxPool(conv2_out, dense1_in, MAXPOOL2_DIM, MAXPOOL2_CHANNELS, WINDOW, STRIDE);
 	
 	/* DENSE LAYER */
-    local float dense2_in[DENSE2_IN_CHANNELS];
 	DenseLayer(dense1_weights, dense1_bias, dense1_in, dense2_in, DENSE1_IN_DIM, DENSE1_IN_CHANNELS,
 			   DENSE2_IN_CHANNELS, false);
 
 	/* DENSE 2 */		
-    local float softmax_node[SOFTMAX_NODE_DIM];
 	DenseLayer(dense2_weights, dense2_bias, dense2_in, softmax_node, DENSE2_IN_DIM, DENSE2_IN_CHANNELS,
 			   SOFTMAX_NODE_DIM, true);
 
 
-	// /* CONV LAYER 1 */
-    // local float padded_img[1024];
-	// PaddingImage(image, padded_img, 28, 1, 2);
-
-    // local float conv1_out[25088];
-	// ConvLayer(conv1_weights, conv1_bias, padded_img, conv1_out, 32, 1, 5, 32);
-
-	// /* MAXPOOL LAYER 1 PLUS PADDING */
-    // local float maxpool1_out[14 * 14 * 32];
-	// MaxPool(conv1_out, maxpool1_out, 28, 32, 2, 2);
-    // local float conv2_in[18 * 18 * 32];
-	// PaddingLayer(maxpool1_out, conv2_in, 14, 32, 2);
-
-	// /* CONV LAYER 2 */
-    // local float conv2_out[14 * 14 * 64];
-	// ConvLayer(conv2_weights, conv2_bias, conv2_in, conv2_out, 18, 32,
-	// 		  5, 64);
-
-	// /* MAXPOOL LAYER 2 */
-    // local float dense1_in[7 * 7 * 64];
-	// MaxPool(conv2_out, dense1_in, 14, 64, 2, 2);
-	
-	// /* DENSE LAYER */
-    // local float dense2_in[256];
-	// DenseLayer(dense1_weights, dense1_bias, dense1_in, dense2_in, 7, 64,
-	// 		   256, false);
-
-	// /* DENSE 2 */		
-    // local float softmax_node[10];
-	// DenseLayer(dense2_weights, dense2_bias, dense2_in, softmax_node, 1, 256,
-	// 		   10, true);
-
-
 	/* FINAL GUESS */
     float neuron_max = -INFINITY;
-	int guess = -1;  // for debugging purpose
+	int predict = -1;  // for debugging purpose
 	for (int i = 0; i < 10; i++)
 	{
 		float current_neuron = softmax_node[i];
 		if (neuron_max < current_neuron)
 		{
 			neuron_max = current_neuron;
-			guess = i;
+			predict = i;
 		}
 	}
-	guesses[get_global_id(0)] = guess;
+	guesses[get_global_id(0)] = predict;
 }
