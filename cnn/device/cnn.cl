@@ -313,8 +313,6 @@ __kernel void linear_classifier(global const unsigned char * restrict images,
 
 
 	/* FINAL GUESS */
-    float neuron_max = -INFINITY;
-	int predict = -1;  // for debugging purpose
 	for (int i = 0; i < 10; i++)
 	{
 		float current_neuron = softmax_node[i];
