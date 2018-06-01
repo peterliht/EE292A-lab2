@@ -81,7 +81,7 @@ void PaddingLayer(local float * restrict inputs, local float * restrict outputs,
 
 // image padding needs to be handled differently due to float vs. char data representations
 void PaddingImage(global const unsigned char * inputs, local float * restrict outputs,
-				  int in_dim, int in_channels, int pad_dim)
+				  const int in_dim, const int in_channels, const int pad_dim)
 {
     const int out_dim = in_dim + pad_dim * 2;
 	const int out_channels = in_channels;
