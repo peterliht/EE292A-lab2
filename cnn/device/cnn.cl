@@ -51,26 +51,22 @@ float ReLU(float input)
 		return input;
 }
 
-void PaddingLayer(local float * restrict inputs, local float * restrict outputs, const int in_dim,
-                  const int in_channels, const int pad_dim)
-{
+void PaddingLayer(
+    local float * restrict inputs, local float * restrict outputs, const int in_dim,
+    const int in_channels, const int pad_dim
+) {
     const int out_dim = in_dim + pad_dim * 2;
 	const int out_channels = in_channels;
-	for (int row = 0; row < out_dim; row++)
-	{
-		for (int col = 0; col < out_dim; col++)
-		{
-			for (int channel = 0; channel < out_channels; channel++)
-			{
+
+	for (int row = 0; row < out_dim; row++) {
+        for (int col = 0; col < out_dim; col++) {
+			for (int channel = 0; channel < out_channels; channel++) {
 				const int out_index = row * out_channels * out_dim + col * out_channels + channel;
-				if (row >= pad_dim && col >= pad_dim && row < in_dim + pad_dim && col < in_dim + pad_dim)
-				{
+				if (row >= pad_dim && col >= pad_dim && row < in_dim + pad_dim && col < in_dim + pad_dim) {
 					const int in_index = (row - pad_dim) * in_dim * in_channels
-                                 + (col - pad_dim) * in_dim * in_channels + out_channels;
+                                       + (col - pad_dim) * in_dim * in_channels + out_channels;
 					outputs[out_index] = inputs[in_index];
-				}
-				else
-                {
+				} else {
                     outputs[out_index] = 0.0;
                 }
 			}
