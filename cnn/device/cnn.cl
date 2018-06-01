@@ -38,7 +38,7 @@
 #define DENSE1_IN_CHANNELS 64
 #define DENSE1_SIZE (DENSE1_IN_DIM * DENSE1_IN_DIM * DENSE1_IN_CHANNELS)
 #define DENSE2_IN_DIM 1
-#define DENSE2_IN_SIZE 256
+#define DENSE2_IN_CHANNELS 256
 #define SOFTMAX_NODE_DIM 10
 
 // TODO: If you decide you'd like to write helper functions, you can define them here
@@ -240,6 +240,7 @@ __kernel void linear_classifier(global const unsigned char * restrict images,
 {
 	global const unsigned char * image = &images[get_global_id(0) * IMG_SIZE];
 
+    // setting local variables for the inter-layer data forward pass
 	local float padded_img[IMG_PADDED_SIZE];
 	local float conv1_out[MAXPOOL1_SIZE];
 	local float maxpool1_out[MAXPOOL1_OUT_SIZE];
@@ -250,7 +251,7 @@ __kernel void linear_classifier(global const unsigned char * restrict images,
 	local float softmax_node[SOFTMAX_NODE_DIM];
 	// float neuron_max = -99920120210;
     float neuron_max = -INFINITY;
-	int predict = -999;  // for debugging purpose
+	int predict = -1;  // for debugging purpose
 
 
 	/* CONV LAYER 1 */
@@ -271,10 +272,10 @@ __kernel void linear_classifier(global const unsigned char * restrict images,
 	
 	/* DENSE LAYER */
 	DenseLayer(dense1_weights, dense1_bias, dense1_in, dense2_in, DENSE1_IN_DIM, DENSE1_IN_CHANNELS,
-			   DENSE2_IN_SIZE, false);
+			   DENSE2_IN_CHANNELS, false);
 
 	/* DENSE 2 */		
-	DenseLayer(dense2_weights, dense2_bias, dense2_in, softmax_node, DENSE2_IN_DIM, DENSE2_IN_SIZE,
+	DenseLayer(dense2_weights, dense2_bias, dense2_in, softmax_node, DENSE2_IN_DIM, DENSE2_IN_CHANNELS,
 			   SOFTMAX_NODE_DIM, true);
 
 	/* FINAL GUESS */

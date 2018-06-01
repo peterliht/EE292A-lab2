@@ -58,7 +58,6 @@ void cleanup();
 void teardown(int exit_status = 1);
 
 
-
 int main(int argc, char **argv) {
 	// Parsing command line arguments.
 	Options options(argc, argv);
@@ -160,28 +159,29 @@ void classify() {
 	checkError(status, "Error: could not create output guesses buffer");
 	
 	// TODO: Add buffers for layer weights
-	conv1_w_buffer = clCreateBuffer(context, CL_MEM_READ_ONLY, sizeof(float) * CONV1_WEIGHT_SIZE, NULL, &status);
+    // bug?: CL_MEM_WRITE_ONLY vs. CL_MEM_READ_ONLY
+	conv1_w_buffer = clCreateBuffer(context, CL_MEM_WRITE_ONLY, sizeof(float) * CONV1_WEIGHT_SIZE, NULL, &status);
 	checkError(status, "Error: could not create conv1 weight buffer");
 
-	conv1_b_buffer = clCreateBuffer(context, CL_MEM_READ_ONLY, sizeof(float) * CONV1_BIAS_COUNT, NULL, &status);
+	conv1_b_buffer = clCreateBuffer(context, CL_MEM_WRITE_ONLY, sizeof(float) * CONV1_BIAS_COUNT, NULL, &status);
 	checkError(status, "Error: could not create conv1 bias buffer");
 
-	conv2_w_buffer = clCreateBuffer(context, CL_MEM_READ_ONLY, sizeof(float) * CONV2_WEIGHT_SIZE, NULL, &status);
+	conv2_w_buffer = clCreateBuffer(context, CL_MEM_WRITE_ONLY, sizeof(float) * CONV2_WEIGHT_SIZE, NULL, &status);
 	checkError(status, "Error: could not create conv2 weight buffer");	
 
-	conv2_b_buffer = clCreateBuffer(context, CL_MEM_READ_ONLY, sizeof(float) * CONV2_BIAS_COUNT, NULL, &status);
+	conv2_b_buffer = clCreateBuffer(context, CL_MEM_WRITE_ONLY, sizeof(float) * CONV2_BIAS_COUNT, NULL, &status);
 	checkError(status, "Error: could not create conv2 bias buffer");
 
-	dense1_w_buffer = clCreateBuffer(context, CL_MEM_READ_ONLY, sizeof(float) * DENSE1_WEIGHT_SIZE, NULL, &status);
+	dense1_w_buffer = clCreateBuffer(context, CL_MEM_WRITE_ONLY, sizeof(float) * DENSE1_WEIGHT_SIZE, NULL, &status);
 	checkError(status, "Error: could not create dense1 weight buffer");
 
-	dense1_b_buffer = clCreateBuffer(context, CL_MEM_READ_ONLY, sizeof(float) * DENSE1_BIAS_COUNT, NULL, &status);
+	dense1_b_buffer = clCreateBuffer(context, CL_MEM_WRITE_ONLY, sizeof(float) * DENSE1_BIAS_COUNT, NULL, &status);
 	checkError(status, "Error: could not create dense1 bias buffer");
 
-	dense2_w_buffer = clCreateBuffer(context, CL_MEM_READ_ONLY, sizeof(float) * DENSE2_WEIGHT_SIZE, NULL, &status);
+	dense2_w_buffer = clCreateBuffer(context, CL_MEM_WRITE_ONLY, sizeof(float) * DENSE2_WEIGHT_SIZE, NULL, &status);
 	checkError(status, "Error: could not create dense2 weight buffer");
 
-	dense2_b_buffer = clCreateBuffer(context, CL_MEM_READ_ONLY, sizeof(float) * DENSE2_BIAS_COUNT, NULL, &status);
+	dense2_b_buffer = clCreateBuffer(context, CL_MEM_WRITE_ONLY, sizeof(float) * DENSE2_BIAS_COUNT, NULL, &status);
 	checkError(status, "Error: could not create dense2 bias buffer");
 	
 
@@ -324,20 +324,21 @@ void teardown(int exit_status) {
 	if(queue) clReleaseCommandQueue(queue);
 	if(input_images) alignedFree(input_images);
 	if(input_weights) alignedFree(input_weights);
-    if(conv1_w) alignedFree(conv1_w);
-    if(conv1_b) alignedFree(conv1_b);
-    if(conv2_w) alignedFree(conv2_w);
-    if(conv2_b) alignedFree(conv2_b);
-    if(dense1_w) alignedFree(dense1_w);
-    if(dense1_b) alignedFree(dense1_b);
-    if(dense2_w) alignedFree(dense2_w);
-    if(dense2_b) alignedFree(dense2_b);
 	if(reference_guesses) alignedFree(reference_guesses);
 	if(output_guesses) alignedFree(output_guesses);
 	if(input_images_buffer) clReleaseMemObject(input_images_buffer);
 	if(output_guesses_buffer) clReleaseMemObject(output_guesses_buffer);
 	if(program) clReleaseProgram(program);
 	if(context) clReleaseContext(context);
+
+    // if(conv1_w) alignedFree(conv1_w);
+    // if(conv1_b) alignedFree(conv1_b);
+    // if(conv2_w) alignedFree(conv2_w);
+    // if(conv2_b) alignedFree(conv2_b);
+    // if(dense1_w) alignedFree(dense1_w);
+    // if(dense1_b) alignedFree(dense1_b);
+    // if(dense2_w) alignedFree(dense2_w);
+    // if(dense2_b) alignedFree(dense2_b);
 	
 	exit(exit_status);
 }
