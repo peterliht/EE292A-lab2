@@ -247,7 +247,7 @@ __kernel void linear_classifier(global const unsigned char * restrict images,
 	local float conv2_in[CONV2_IN_SIZE];
 	local float conv2_out[MAXPOOL2_SIZE];
 	local float dense1_in[DENSE1_SIZE];
-	local float dense2_in[DENSE2_IN_SIZE];
+	local float dense2_in[DENSE2_IN_CHANNELS];
 	local float softmax_node[SOFTMAX_NODE_DIM];
 	// float neuron_max = -99920120210;
     float neuron_max = -INFINITY;
