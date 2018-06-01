@@ -1,45 +1,97 @@
 // TODO: Define any constants you'll need
 // image is a 28x28xN array (N images) of bytes (each pixel is 8 bit grayscale)
 
-// IMG input
-#define PAD_SIZE 2
-#define IMG_DIM 28
-#define IMG_SIZE (IMG_DIM * IMG_DIM)
-#define IMG_PADDED_DIM 32
-#define IMG_PADDED_SIZE (IMG_PADDED_DIM * IMG_PADDED_DIM)
+// // IMG input
+// #define PAD_SIZE 2
+// #define IMG_DIM 28
+// #define IMG_SIZE (IMG_DIM * IMG_DIM)
+// #define IMG_PADDED_DIM 32
+// #define IMG_PADDED_SIZE (IMG_PADDED_DIM * IMG_PADDED_DIM)
 
-// CONV1 
-#define CONV1_FILTER_DIM 5
-#define CONV1_NUM_FILTERS 32
+// // CONV1 
+// #define CONV1_FILTER_DIM 5
+// #define CONV1_NUM_FILTERS 32
 
-// MAXPOOL1
-#define WINDOW 2
-#define STRIDE 2
-#define MAXPOOL1_DIM 28
-#define MAXPOOL1_CHANNELS 32
-#define MAXPOOL1_SIZE (MAXPOOL1_DIM * MAXPOOL1_DIM * MAXPOOL1_CHANNELS)
-#define MAXPOOL1_OUT_SIZE (MAXPOOL1_SIZE / 4)
+// // MAXPOOL1
+// #define WINDOW 2
+// #define STRIDE 2
+// #define MAXPOOL1_DIM 28
+// #define MAXPOOL1_CHANNELS 32
+// #define MAXPOOL1_SIZE (MAXPOOL1_DIM * MAXPOOL1_DIM * MAXPOOL1_CHANNELS)
+// #define MAXPOOL1_OUT_SIZE (MAXPOOL1_SIZE / 4)
 
-// CONV2
-#define CONV2_IN_PADDED_DIM 18
-#define CONV2_IN_CHANNELS 32
-#define CONV2_IN_SIZE (CONV2_IN_PADDED_DIM * CONV2_IN_PADDED_DIM * CONV2_IN_CHANNELS)
+// // CONV2
+// #define CONV2_IN_PADDED_DIM 18
+// #define CONV2_IN_CHANNELS 32
+// #define CONV2_IN_SIZE (CONV2_IN_PADDED_DIM * CONV2_IN_PADDED_DIM * CONV2_IN_CHANNELS)
 
-#define CONV2_FILTER_DIM 5
-#define CONV2_NUM_FILTERS 64
+// #define CONV2_FILTER_DIM 5
+// #define CONV2_NUM_FILTERS 64
 
-// MAXPOOL2
-#define MAXPOOL2_DIM 14
-#define MAXPOOL2_CHANNELS 64
-#define MAXPOOL2_SIZE (MAXPOOL2_DIM * MAXPOOL2_DIM * MAXPOOL2_CHANNELS)
+// // MAXPOOL2
+// #define MAXPOOL2_DIM 14
+// #define MAXPOOL2_CHANNELS 64
+// #define MAXPOOL2_SIZE (MAXPOOL2_DIM * MAXPOOL2_DIM * MAXPOOL2_CHANNELS)
 
-// DENSE1 & DENSE2 & FINAL SOFTMAX
-#define DENSE1_IN_DIM 7
-#define DENSE1_IN_CHANNELS 64
-#define DENSE1_SIZE (DENSE1_IN_DIM * DENSE1_IN_DIM * DENSE1_IN_CHANNELS)
-#define DENSE2_IN_DIM 1
-#define DENSE2_IN_CHANNELS 256
-#define SOFTMAX_NODE_DIM 10
+// // DENSE1 & DENSE2 & FINAL SOFTMAX
+// #define DENSE1_IN_DIM 7
+// #define DENSE1_IN_CHANNELS 64
+// #define DENSE1_SIZE (DENSE1_IN_DIM * DENSE1_IN_DIM * DENSE1_IN_CHANNELS)
+// #define DENSE2_IN_DIM 1
+// #define DENSE2_IN_CHANNELS 256
+// #define SOFTMAX_NODE_DIM 10
+
+//test:
+#define IMG_WIDTH 28
+#define IMG_HEIGHT 28
+#define IMG_CHANNELS 1
+#define IMG_SIZE (IMG_WIDTH * IMG_HEIGHT * IMG_CHANNELS)
+
+#define IMAGE_INPUT (28 * 28 * 1)
+
+#define CONV1_INPUT_WIDTH 32
+#define CONV1_INPUT_HEIGHT 32
+#define CONV1_INPUT_CHANNELS 1
+#define CONV1_INPUT (32 * 32 * 1)
+
+#define CONV1_FILTER_WIDTH 5
+#define CONV1_FILTER_HEIGHT 5
+#define CONV1_FILTER_CHANNELS 32
+
+#define MAXPOOL1_INPUT_WIDTH 28
+#define MAXPOOL1_INPUT_HEIGHT 28
+#define MAXPOOL1_INPUT_CHANNELS 32
+#define MAXPOOL1_INPUT (28 * 28 * 32)
+
+#define CONV2_INPUT_WIDTH 18
+#define CONV2_INPUT_HEIGHT 18
+#define CONV2_INPUT_CHANNELS 32
+#define CONV2_INPUT (18 * 18 * 32)
+
+#define CONV2_FILTER_WIDTH 5
+#define CONV2_FILTER_HEIGHT 5
+#define CONV2_FILTER_CHANNELS 64
+
+#define MAXPOOL2_INPUT_WIDTH 14
+#define MAXPOOL2_INPUT_HEIGHT 14
+#define MAXPOOL2_INPUT_CHANNELS 64
+#define MAXPOOL2_INPUT (14 * 14 * 64)
+
+#define DENSE1_INPUT_WIDTH 7
+#define DENSE1_INPUT_HEIGHT 7
+#define DENSE1_INPUT_CHANNELS 64
+#define DENSE1_INPUT (7 * 7 * 64)
+
+#define DENSE2_INPUT_WIDTH 1
+#define DENSE2_INPUT_HEIGHT 1
+#define DENSE2_INPUT_CHANNELS 256
+#define DENSE2_INPUT (256 * 1 * 1)
+
+#define SOFTMAX_INPUT 10
+
+//
+
+
 
 // TODO: If you decide you'd like to write helper functions, you can define them here
 
@@ -221,7 +273,7 @@ void DenseLayer(constant float * restrict weights, constant float * restrict bia
 			}
 		}
 		float neuron_output = dotprod + bias[l];
-		if (!isFinalLayer)  // previous bug: missing "!" here! Only FinalLayer uses Softmax!
+		if (isFinalLayer == false)  // previous bug: missing "!" here! Only FinalLayer uses Softmax!
 		{
 			outputs[l] = ReLU(neuron_output);
 		}
@@ -232,6 +284,18 @@ void DenseLayer(constant float * restrict weights, constant float * restrict bia
 	}
 }
 
+//TEST:
+void print_buffer(const char* fmt, local const float * restrict buffer,
+    const int width, const int height, const int channels) {
+  for (int w = 0; w < width; w++) {
+    for (int h = 0; h < height; h++) {
+      for (int c = 0; c < 1; c++) {
+        printf(fmt, buffer[w * height * channels + h * channels + c]);
+      }
+    }
+    printf("\n");
+  }
+}
 
 // TODO: Build a CNN!
 __attribute__((reqd_work_group_size(100,1,1))) // change this to change workgroup size
@@ -262,38 +326,38 @@ __kernel void linear_classifier(global const unsigned char * restrict images,
 	// int predict = -1;  // for debugging purpose
 
 
-	/* CONV LAYER 1 */
-    local float padded_img[IMG_PADDED_SIZE];
-	PaddingImage(image, padded_img, IMG_DIM, 1, 2);
+	// /* CONV LAYER 1 */
+    // local float padded_img[IMG_PADDED_SIZE];
+	// PaddingImage(image, padded_img, IMG_DIM, 1, 2);
 
-    local float conv1_out[MAXPOOL1_SIZE];
-	ConvLayer(conv1_weights, conv1_bias, padded_img, conv1_out, IMG_PADDED_DIM, 1, CONV1_FILTER_DIM,
-			  CONV1_NUM_FILTERS);
+    // local float conv1_out[MAXPOOL1_SIZE];
+	// ConvLayer(conv1_weights, conv1_bias, padded_img, conv1_out, IMG_PADDED_DIM, 1, CONV1_FILTER_DIM,
+	// 		  CONV1_NUM_FILTERS);
 
-	/* MAXPOOL LAYER 1 PLUS PADDING */
-    local float maxpool1_out[MAXPOOL1_OUT_SIZE];
-	MaxPool(conv1_out, maxpool1_out, MAXPOOL1_DIM, MAXPOOL1_CHANNELS, WINDOW, STRIDE);
-    local float conv2_in[CONV2_IN_SIZE];
-	PaddingLayer(maxpool1_out, conv2_in, MAXPOOL1_DIM/2, MAXPOOL1_CHANNELS, PAD_SIZE);
+	// /* MAXPOOL LAYER 1 PLUS PADDING */
+    // local float maxpool1_out[MAXPOOL1_OUT_SIZE];
+	// MaxPool(conv1_out, maxpool1_out, MAXPOOL1_DIM, MAXPOOL1_CHANNELS, WINDOW, STRIDE);
+    // local float conv2_in[CONV2_IN_SIZE];
+	// PaddingLayer(maxpool1_out, conv2_in, MAXPOOL1_DIM/2, MAXPOOL1_CHANNELS, PAD_SIZE);
 
-	/* CONV LAYER 2 */
-    local float conv2_out[MAXPOOL2_SIZE];
-	ConvLayer(conv2_weights, conv2_bias, conv2_in, conv2_out, CONV2_IN_PADDED_DIM, CONV2_IN_CHANNELS,
-			  CONV2_FILTER_DIM, CONV2_NUM_FILTERS);
+	// /* CONV LAYER 2 */
+    // local float conv2_out[MAXPOOL2_SIZE];
+	// ConvLayer(conv2_weights, conv2_bias, conv2_in, conv2_out, CONV2_IN_PADDED_DIM, CONV2_IN_CHANNELS,
+	// 		  CONV2_FILTER_DIM, CONV2_NUM_FILTERS);
 
-	/* MAXPOOL LAYER 2 */
-    local float dense1_in[DENSE1_SIZE];
-	MaxPool(conv2_out, dense1_in, MAXPOOL2_DIM, MAXPOOL2_CHANNELS, WINDOW, STRIDE);
+	// /* MAXPOOL LAYER 2 */
+    // local float dense1_in[DENSE1_SIZE];
+	// MaxPool(conv2_out, dense1_in, MAXPOOL2_DIM, MAXPOOL2_CHANNELS, WINDOW, STRIDE);
 	
-	/* DENSE LAYER */
-    local float dense2_in[DENSE2_IN_CHANNELS];
-	DenseLayer(dense1_weights, dense1_bias, dense1_in, dense2_in, DENSE1_IN_DIM, DENSE1_IN_CHANNELS,
-			   DENSE2_IN_CHANNELS, false);
+	// /* DENSE LAYER */
+    // local float dense2_in[DENSE2_IN_CHANNELS];
+	// DenseLayer(dense1_weights, dense1_bias, dense1_in, dense2_in, DENSE1_IN_DIM, DENSE1_IN_CHANNELS,
+	// 		   DENSE2_IN_CHANNELS, false);
 
-	/* DENSE 2 */		
-    local float softmax_node[SOFTMAX_NODE_DIM];
-	DenseLayer(dense2_weights, dense2_bias, dense2_in, softmax_node, DENSE2_IN_DIM, DENSE2_IN_CHANNELS,
-			   SOFTMAX_NODE_DIM, true);
+	// /* DENSE 2 */		
+    // local float softmax_node[SOFTMAX_NODE_DIM];
+	// DenseLayer(dense2_weights, dense2_bias, dense2_in, softmax_node, DENSE2_IN_DIM, DENSE2_IN_CHANNELS,
+	// 		   SOFTMAX_NODE_DIM, true);
 
 	// /* CONV LAYER 1 */
     // local float padded_img[1024];
@@ -327,18 +391,82 @@ __kernel void linear_classifier(global const unsigned char * restrict images,
 	// DenseLayer(dense2_weights, dense2_bias, dense2_in, softmax_node, 1, 256,
 	// 		   10, true);
 
+    //test:
+
+    local float conv1_input[CONV1_INPUT];
+    PaddingImage(image, conv1_input, IMG_WIDTH, IMG_CHANNELS, 2);
+
+    /* CONV LAYER 1 */
+    local float maxpool1_input[MAXPOOL1_INPUT];
+    ConvLayer(conv1_weights, conv1_bias, conv1_input, maxpool1_input, 
+    CONV1_INPUT_WIDTH, CONV1_INPUT_CHANNELS,
+    CONV1_FILTER_WIDTH, CONV1_FILTER_CHANNELS);
+
+  /* MAXPOOL LAYER */
+    local float maxpool1_output[14 * 14 * 32];
+    MaxPool(
+    maxpool1_input, maxpool1_output,
+    MAXPOOL1_INPUT_WIDTH, MAXPOOL1_INPUT_CHANNELS, 2, 2);
+
+  /* pad */
+    local float conv2_input[CONV2_INPUT];
+    PaddingLayer(maxpool1_output, conv2_input, 14, 32, 2);
+    
+    print_buffer("%09.6f, ", conv2_input, 18, 18, 32);
+  
+  /* CONV LAYER 2 */
+    local float maxpool2_input[MAXPOOL2_INPUT];
+    ConvLayer(conv2_weights, conv2_bias, conv2_input, maxpool2_input, 18, 32, 5, 64);
+
+    print_buffer("%06.2f, ", maxpool2_input, 14, 14, 64);
+  
+  /* MAXPOOL LAYER 2 */
+    local float dense1_input[DENSE1_INPUT];
+    MaxPool(maxpool2_input, dense1_input,
+      MAXPOOL2_INPUT_WIDTH, MAXPOOL2_INPUT_CHANNELS, 2, 2);
+  
+    print_buffer("%06.2f, ", maxpool2_input, 7, 7, 64);
+
+  /* DENSE LAYER 1 */
+    local float dense2_input[DENSE2_INPUT];
+    DenseLayer(
+      dense1_weights, dense1_bias, dense1_input, dense2_input,
+      DENSE1_INPUT_WIDTH, DENSE1_INPUT_CHANNELS,
+      DENSE2_INPUT, false);
+  
+  /* DENSE LAYER 2 */
+    local float softmax_input[SOFTMAX_INPUT];
+    DenseLayer(
+      dense2_weights, dense2_bias, dense2_input, softmax_input,
+      DENSE2_INPUT_WIDTH, DENSE2_INPUT_CHANNELS,
+      SOFTMAX_INPUT, true);
+
+    
 
 	/* FINAL GUESS */
-    float neuron_max = -INFINITY;
-	int guess = -1;  // for debugging purpose
-	for (int i = 0; i < 10; i++)
-	{
-		float current_neuron = softmax_node[i];
-		if (neuron_max < current_neuron)
-		{
-			neuron_max = current_neuron;
-			guess = i;
-		}
-	}
-	guesses[get_global_id(0)] = guess;
+    // float neuron_max = -INFINITY;
+	// int guess = -1;  // for debugging purpose
+	// for (int i = 0; i < 10; i++)
+	// {
+	// 	float current_neuron = softmax_node[i];
+	// 	if (neuron_max < current_neuron)
+	// 	{
+	// 		neuron_max = current_neuron;
+	// 		guess = i;
+	// 	}
+	// }
+	// guesses[get_global_id(0)] = guess;
+
+      /* FINAL GUESS */
+  float maximum = -INFINITY;
+  int guess = -1;
+  for (int i = 0; i < SOFTMAX_INPUT; i++) {
+    float pix = softmax_input[i];
+    if (maximum < pix) {
+      maximum = pix;
+      guess = i;
+    }
+  }
+
+  guesses[get_global_id(0)] = guess;
 }
