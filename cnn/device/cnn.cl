@@ -305,37 +305,38 @@ __kernel void linear_classifier(global const unsigned char * restrict images,
 	DenseLayer(dense2_weights, dense2_bias, dense2_in, softmax_node, DENSE2_IN_DIM, DENSE2_IN_CHANNELS,
 			   SOFTMAX_NODE_DIM, true);
 
-	/* CONV LAYER 1 */
-    local float padded_img[1024];
-	PaddingImage(image, padded_img, 28, 1, 2);
 
-    local float conv1_out[25088];
-	ConvLayer(conv1_weights, conv1_bias, padded_img, conv1_out, 32, 1, 5, 32);
+	// /* CONV LAYER 1 */
+    // local float padded_img[1024];
+	// PaddingImage(image, padded_img, 28, 1, 2);
 
-	/* MAXPOOL LAYER 1 PLUS PADDING */
-    local float maxpool1_out[14 * 14 * 32];
-	MaxPool(conv1_out, maxpool1_out, 28, 32, 2, 2);
-    local float conv2_in[18 * 18 * 32];
-	PaddingLayer(maxpool1_out, conv2_in, 14, 32, 2);
+    // local float conv1_out[25088];
+	// ConvLayer(conv1_weights, conv1_bias, padded_img, conv1_out, 32, 1, 5, 32);
 
-	/* CONV LAYER 2 */
-    local float conv2_out[14 * 14 * 64];
-	ConvLayer(conv2_weights, conv2_bias, conv2_in, conv2_out, 18, 32,
-			  5, 64);
+	// /* MAXPOOL LAYER 1 PLUS PADDING */
+    // local float maxpool1_out[14 * 14 * 32];
+	// MaxPool(conv1_out, maxpool1_out, 28, 32, 2, 2);
+    // local float conv2_in[18 * 18 * 32];
+	// PaddingLayer(maxpool1_out, conv2_in, 14, 32, 2);
 
-	/* MAXPOOL LAYER 2 */
-    local float dense1_in[7 * 7 * 64];
-	MaxPool(conv2_out, dense1_in, 14, 64, 2, 2);
+	// /* CONV LAYER 2 */
+    // local float conv2_out[14 * 14 * 64];
+	// ConvLayer(conv2_weights, conv2_bias, conv2_in, conv2_out, 18, 32,
+	// 		  5, 64);
+
+	// /* MAXPOOL LAYER 2 */
+    // local float dense1_in[7 * 7 * 64];
+	// MaxPool(conv2_out, dense1_in, 14, 64, 2, 2);
 	
-	/* DENSE LAYER */
-    local float dense2_in[256];
-	DenseLayer(dense1_weights, dense1_bias, dense1_in, dense2_in, 7, 64,
-			   256, false);
+	// /* DENSE LAYER */
+    // local float dense2_in[256];
+	// DenseLayer(dense1_weights, dense1_bias, dense1_in, dense2_in, 7, 64,
+	// 		   256, false);
 
-	/* DENSE 2 */		
-    local float softmax_node[10];
-	DenseLayer(dense2_weights, dense2_bias, dense2_in, softmax_node, 1, 256,
-			   10, true);
+	// /* DENSE 2 */		
+    // local float softmax_node[10];
+	// DenseLayer(dense2_weights, dense2_bias, dense2_in, softmax_node, 1, 256,
+	// 		   10, true);
 
 
 	/* FINAL GUESS */
