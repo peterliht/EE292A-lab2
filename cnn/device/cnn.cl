@@ -71,7 +71,7 @@ void PaddingLayer(local float * restrict inputs, local float * restrict outputs,
 				}
 				else
                 {
-                    outputs[out_index] = 0.0;
+                    outputs[out_index] = 0;
                 }
 			}
 		}
@@ -100,7 +100,7 @@ void PaddingImage(global const unsigned char * inputs, local float * restrict ou
 				}
 				else
                 {
-                    outputs[out_index] = 0.0;
+                    outputs[out_index] = 0;
                 }
 			}
 		}
@@ -190,26 +190,30 @@ void DenseLayer(constant float * restrict weights, constant float * restrict bia
 				local const float * restrict inputs, local float * restrict outputs,
 				const int in_dim, const int in_channels, const int out_dim, bool isFinalLayer)
 {
-	float dotprod = 0.0;
-	float neuron_output = 0.0;
+	// float dotprod = 0.0;
+	// float neuron_output = 0.0;
 	for (int l = 0; l < out_dim; l++)
 	{
-		dotprod = 0.0;
+		float dotprod = 0;
 		for (int row = 0; row < in_dim; row++)
 		{
 			for (int col = 0; col < in_dim; col++)
 			{
 				for (int ch = 0; ch < in_channels; ch++)
 				{
-					const int in_index = row * in_dim + in_channels + col * in_channels + ch;
-					const int weight_index = row * in_dim * in_channels * out_dim + col * in_channels
-									 * out_dim + ch * out_dim + l;
-					dotprod += inputs[in_index] * weights[weight_index];
+					// const int in_index = row * in_dim + in_channels + col * in_channels + ch;
+					// const int weight_index = row * in_dim * in_channels * out_dim + col * in_channels
+					// 				 * out_dim + ch * out_dim + l;
+					// dotprod += inputs[in_index] * weights[weight_index];
+					float neuron = inputs[row * in_dim * in_channels + col * in_channels + ch]; // * previous bug: instead of before in_channels!!!
+					float fc_weights = weights[row * in_dim * in_channels * out_dim + col * in_channels
+									 * out_dim + ch * out_dim + l];
+					dotprod += neuron + fc_weights;
 				}
 			}
 		}
-		neuron_output = dotprod + bias[l];
-		if (isFinalLayer)
+		float neuron_output = dotprod + bias[l];
+		if (!isFinalLayer)  // previous bug: missing "!" here! Only FinalLayer uses Softmax!
 		{
 			outputs[l] = ReLU(neuron_output);
 		}
