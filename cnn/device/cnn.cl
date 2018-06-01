@@ -209,10 +209,10 @@ void DenseLayer(constant float * restrict weights, constant float * restrict bia
 					// const int weight_index = row * in_dim * in_channels * out_dim + col * in_channels
 					// 				 * out_dim + ch * out_dim + l;
 					// dotprod += inputs[in_index] * weights[weight_index];
-					float neuron = inputs[row * in_dim * in_channels + col * in_channels + ch]; // * previous bug: instead of before in_channels!!!
+					float neuron = inputs[row * in_dim * in_channels + col * in_channels + ch]; // previous bug: * instead of + before in_channels!!!
 					float fc_weights = weights[row * in_dim * in_channels * out_dim + col * in_channels
 									 * out_dim + ch * out_dim + l];
-					dotprod += neuron + fc_weights;
+					dotprod += neuron * fc_weights;  // bug catched here: should be "*"!!!
 				}
 			}
 		}
