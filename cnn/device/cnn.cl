@@ -43,12 +43,16 @@
 
 // TODO: If you decide you'd like to write helper functions, you can define them here
 
-float ReLU(float input)
-{
-	if (input < 0.)
-		return 0.;
-	else
-		return input;
+// float ReLU(float input)
+// {
+// 	if (input < 0.)
+// 		return 0.;
+// 	else
+// 		return input;
+// }
+
+float ReLU(float x) {
+  return (x < 0.) ? 0. : x;
 }
 
 void PaddingLayer(local float * restrict inputs, local float * restrict outputs, const int in_dim,
@@ -258,70 +262,70 @@ __kernel void linear_classifier(global const unsigned char * restrict images,
 	// int predict = -1;  // for debugging purpose
 
 
-	// /* CONV LAYER 1 */
-    // local float padded_img[IMG_PADDED_SIZE];
-	// PaddingImage(image, padded_img, IMG_DIM, 1, 2);
-
-    // local float conv1_out[MAXPOOL1_SIZE];
-	// ConvLayer(conv1_weights, conv1_bias, padded_img, conv1_out, IMG_PADDED_DIM, 1, CONV1_FILTER_DIM,
-	// 		  CONV1_NUM_FILTERS);
-
-	// /* MAXPOOL LAYER 1 PLUS PADDING */
-    // local float maxpool1_out[MAXPOOL1_OUT_SIZE];
-	// MaxPool(conv1_out, maxpool1_out, MAXPOOL1_DIM, MAXPOOL1_CHANNELS, WINDOW, STRIDE);
-    // local float conv2_in[CONV2_IN_SIZE];
-	// PaddingLayer(maxpool1_out, conv2_in, MAXPOOL1_DIM/2, MAXPOOL1_CHANNELS, PAD_SIZE);
-
-	// /* CONV LAYER 2 */
-    // local float conv2_out[MAXPOOL2_SIZE];
-	// ConvLayer(conv2_weights, conv2_bias, conv2_in, conv2_out, CONV2_IN_PADDED_DIM, CONV2_IN_CHANNELS,
-	// 		  CONV2_FILTER_DIM, CONV2_NUM_FILTERS);
-
-	// /* MAXPOOL LAYER 2 */
-    // local float dense1_in[DENSE1_SIZE];
-	// MaxPool(conv2_out, dense1_in, MAXPOOL2_DIM, MAXPOOL2_CHANNELS, WINDOW, STRIDE);
-	
-	// /* DENSE LAYER */
-    // local float dense2_in[DENSE2_IN_CHANNELS];
-	// DenseLayer(dense1_weights, dense1_bias, dense1_in, dense2_in, DENSE1_IN_DIM, DENSE1_IN_CHANNELS,
-	// 		   DENSE2_IN_CHANNELS, false);
-
-	// /* DENSE 2 */		
-    // local float softmax_node[SOFTMAX_NODE_DIM];
-	// DenseLayer(dense2_weights, dense2_bias, dense2_in, softmax_node, DENSE2_IN_DIM, DENSE2_IN_CHANNELS,
-	// 		   SOFTMAX_NODE_DIM, true);
-
 	/* CONV LAYER 1 */
-    local float padded_img[1024];
-	PaddingImage(image, padded_img, 28, 1, 2);
+    local float padded_img[IMG_PADDED_SIZE];
+	PaddingImage(image, padded_img, IMG_DIM, 1, 2);
 
-    local float conv1_out[25088];
-	ConvLayer(conv1_weights, conv1_bias, padded_img, conv1_out, 32, 1, 5, 32);
+    local float conv1_out[MAXPOOL1_SIZE];
+	ConvLayer(conv1_weights, conv1_bias, padded_img, conv1_out, IMG_PADDED_DIM, 1, CONV1_FILTER_DIM,
+			  CONV1_NUM_FILTERS);
 
 	/* MAXPOOL LAYER 1 PLUS PADDING */
-    local float maxpool1_out[14 * 14 * 32];
-	MaxPool(conv1_out, maxpool1_out, 28, 32, 2, 2);
-    local float conv2_in[18 * 18 * 32];
-	PaddingLayer(maxpool1_out, conv2_in, 14, 32, 2);
+    local float maxpool1_out[MAXPOOL1_OUT_SIZE];
+	MaxPool(conv1_out, maxpool1_out, MAXPOOL1_DIM, MAXPOOL1_CHANNELS, WINDOW, STRIDE);
+    local float conv2_in[CONV2_IN_SIZE];
+	PaddingLayer(maxpool1_out, conv2_in, MAXPOOL1_DIM/2, MAXPOOL1_CHANNELS, PAD_SIZE);
 
 	/* CONV LAYER 2 */
-    local float conv2_out[14 * 14 * 64];
-	ConvLayer(conv2_weights, conv2_bias, conv2_in, conv2_out, 18, 32,
-			  5, 64);
+    local float conv2_out[MAXPOOL2_SIZE];
+	ConvLayer(conv2_weights, conv2_bias, conv2_in, conv2_out, CONV2_IN_PADDED_DIM, CONV2_IN_CHANNELS,
+			  CONV2_FILTER_DIM, CONV2_NUM_FILTERS);
 
 	/* MAXPOOL LAYER 2 */
-    local float dense1_in[7 * 7 * 64];
-	MaxPool(conv2_out, dense1_in, 14, 64, 2, 2);
+    local float dense1_in[DENSE1_SIZE];
+	MaxPool(conv2_out, dense1_in, MAXPOOL2_DIM, MAXPOOL2_CHANNELS, WINDOW, STRIDE);
 	
 	/* DENSE LAYER */
-    local float dense2_in[256];
-	DenseLayer(dense1_weights, dense1_bias, dense1_in, dense2_in, 7, 64,
-			   256, false);
+    local float dense2_in[DENSE2_IN_CHANNELS];
+	DenseLayer(dense1_weights, dense1_bias, dense1_in, dense2_in, DENSE1_IN_DIM, DENSE1_IN_CHANNELS,
+			   DENSE2_IN_CHANNELS, false);
 
 	/* DENSE 2 */		
-    local float softmax_node[10];
-	DenseLayer(dense2_weights, dense2_bias, dense2_in, softmax_node, 1, 256,
-			   10, true);
+    local float softmax_node[SOFTMAX_NODE_DIM];
+	DenseLayer(dense2_weights, dense2_bias, dense2_in, softmax_node, DENSE2_IN_DIM, DENSE2_IN_CHANNELS,
+			   SOFTMAX_NODE_DIM, true);
+
+	// /* CONV LAYER 1 */
+    // local float padded_img[1024];
+	// PaddingImage(image, padded_img, 28, 1, 2);
+
+    // local float conv1_out[25088];
+	// ConvLayer(conv1_weights, conv1_bias, padded_img, conv1_out, 32, 1, 5, 32);
+
+	// /* MAXPOOL LAYER 1 PLUS PADDING */
+    // local float maxpool1_out[14 * 14 * 32];
+	// MaxPool(conv1_out, maxpool1_out, 28, 32, 2, 2);
+    // local float conv2_in[18 * 18 * 32];
+	// PaddingLayer(maxpool1_out, conv2_in, 14, 32, 2);
+
+	// /* CONV LAYER 2 */
+    // local float conv2_out[14 * 14 * 64];
+	// ConvLayer(conv2_weights, conv2_bias, conv2_in, conv2_out, 18, 32,
+	// 		  5, 64);
+
+	// /* MAXPOOL LAYER 2 */
+    // local float dense1_in[7 * 7 * 64];
+	// MaxPool(conv2_out, dense1_in, 14, 64, 2, 2);
+	
+	// /* DENSE LAYER */
+    // local float dense2_in[256];
+	// DenseLayer(dense1_weights, dense1_bias, dense1_in, dense2_in, 7, 64,
+	// 		   256, false);
+
+	// /* DENSE 2 */		
+    // local float softmax_node[10];
+	// DenseLayer(dense2_weights, dense2_bias, dense2_in, softmax_node, 1, 256,
+	// 		   10, true);
 
 
 	/* FINAL GUESS */
