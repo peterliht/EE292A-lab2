@@ -42,10 +42,9 @@
 #define SOFTMAX_NODE_DIM 10
 
 // TODO: If you decide you'd like to write helper functions, you can define them here
-void PaddingLayer(local float * restrict inputs, local float * restrict outputs,
-				  int in_dim, int in_channels, int pad_dim)
+void PaddingLayer(local float * restrict inputs, local float * restrict outputs, int in_dim, int in_channels, int pad_dim)
 {
-	int out_dim = in_dim + pad_dim * 2;
+    int out_dim = in_dim + pad_dim * 2;
 	int out_channels = in_channels;
 	for (int row = 0; row < out_dim; row++)
 	{
@@ -54,14 +53,16 @@ void PaddingLayer(local float * restrict inputs, local float * restrict outputs,
 			for (int channel = 0; channel < out_channels; channel++)
 			{
 				int out_index = row * out_channels * out_dim + col * out_channels + channel;
-				if (row >= pad_dim && col >= pad_dim && row < in_dim + pad_dim
-					&& col < in_dim + pad_dim)
+				if (row >= pad_dim && col >= pad_dim && row < in_dim + pad_dim && col < in_dim + pad_dim)
 				{
 					int in_index = (row - pad_dim) * in_dim * in_channels
-								 + (col - pad_dim) * in_dim * in_channels + out_channels;
+                                 + (col - pad_dim) * in_dim * in_channels + out_channels;
 					outputs[out_index] = inputs[in_index];
 				}
-				else {outputs[out_index] = 0.0;
+				else
+                {
+                    outputs[out_index] = 0.0;
+                }
 			}
 		}
 	}
@@ -80,14 +81,16 @@ void PaddingImage(global const unsigned char * inputs, local float * restrict ou
 			for (int channel = 0; channel < out_channels; channel++)
 			{
 				int out_index = row * out_channels * out_dim + col * out_channels + channel;
-				if (row >= pad_dim && col >= pad_dim && row < in_dim + pad_dim
-					&& col < in_dim + pad_dim)
+				if (row >= pad_dim && col >= pad_dim && row < in_dim + pad_dim && col < in_dim + pad_dim)
 				{
 					int in_index = (row - pad_dim) * in_dim * in_channels
 								 + (col - pad_dim) * in_dim * in_channels + out_channels;
 					outputs[out_index] = inputs[in_index];
 				}
-				else {outputs[out_index] = 0.0;
+				else 
+                {
+                    outputs[out_index] = 0.0;
+                }
 			}
 		}
 	}
