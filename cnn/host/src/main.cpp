@@ -329,14 +329,15 @@ void teardown(int exit_status) {
 	if(program) clReleaseProgram(program);
 	if(context) clReleaseContext(context);
 
-    // if(conv1_w) alignedFree(conv1_w);
-    // if(conv1_b) alignedFree(conv1_b);
-    // if(conv2_w) alignedFree(conv2_w);
-    // if(conv2_b) alignedFree(conv2_b);
-    // if(dense1_w) alignedFree(dense1_w);
-    // if(dense1_b) alignedFree(dense1_b);
-    // if(dense2_w) alignedFree(dense2_w);
-    // if(dense2_b) alignedFree(dense2_b);
+    // freeing the newly added stuff (would run time be improved??)
+    if(conv1_w) alignedFree(conv1_w);
+    if(conv1_b) alignedFree(conv1_b);
+    if(conv2_w) alignedFree(conv2_w);
+    if(conv2_b) alignedFree(conv2_b);
+    if(dense1_w) alignedFree(dense1_w);
+    if(dense1_b) alignedFree(dense1_b);
+    if(dense2_w) alignedFree(dense2_w);
+    if(dense2_b) alignedFree(dense2_b);
 	
 	exit(exit_status);
 }
