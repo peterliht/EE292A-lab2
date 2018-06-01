@@ -60,9 +60,9 @@ void PaddingLayer(
 
   for (int row = 0; row < out_dim; row++) {
     for (int col = 0; col < out_dim; col++) {
-	  for (int channel = 0; channel < out_channels; channel++) {
-        const int out_index = row * out_channels * out_dim + col * out_channels + channel;
-		if (row >= pad_dim && col >= pad_dim && row < in_dim + pad_dim && col < in_dim + pad_dim) {
+	  for (int ch = 0; ch < out_channels; ch++) {
+        const int out_index = row * out_channels * out_dim + col * out_channels + ch;
+		if (row >= pad_dim && col >= pad_dim && (row < in_dim + pad_dim) && (col < in_dim + pad_dim)) {
 		  const int in_index = (row - pad_dim) * in_dim * in_channels + (col - pad_dim) * in_dim * in_channels + out_channels;
 		  outputs[out_index] = inputs[in_index];
 		} else {
