@@ -9,7 +9,6 @@
 #include "AOCLUtils/aocl_utils.h"
 #include "../../shared/defines.h"
 #include "../../shared/utils.h"
-#include "assert.h"
 
 // TODO: If you want to define constants, you can do it here
 #define CONV1_WEIGHT_SIZE (5 * 5 * 1 * 32)   // filter size * channel * num_filters
@@ -113,8 +112,7 @@ int main(int argc, char **argv) {
 	dense2_b = (cl_float*)alignedMalloc(sizeof(cl_float) * DENSE2_BIAS_COUNT);
 
 	// TODO: Read in weights from weights files
-	bool check = read_weights_file("weights/conv1_weights", conv1_w, CONV1_WEIGHT_SIZE);
-    assert(check);
+	read_weights_file("weights/conv1_weights", conv1_w, CONV1_WEIGHT_SIZE);
 	read_weights_file("weights/conv1_bias", conv1_b, CONV1_BIAS_COUNT);
 	read_weights_file("weights/conv2_weights", conv2_w, CONV2_WEIGHT_SIZE);
 	read_weights_file("weights/conv2_bias", conv2_b, CONV2_BIAS_COUNT);
