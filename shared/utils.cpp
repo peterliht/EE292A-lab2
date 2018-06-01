@@ -8,6 +8,10 @@
 #include "CL/opencl.h"
 #include "AOCLUtils/aocl_utils.h"
 
+#include <iostream>
+#include <fstream>
+
+using namespace std;
 using namespace aocl_utils;
 
 unsigned int convert_endian_4bytes(unsigned int input){
@@ -27,18 +31,37 @@ void write_weights_file(char *filename, float *weights, int num_weights) {
 	fclose(f);
 }
 
-bool read_weights_file(char *filename, float *weights) {
-	FILE *f = fopen(filename, "rb");
-	if (f == NULL){
-		printf("ERROR: could not open %s\n",filename);
+// Below is the original function sent out in lab2
+// bool read_weights_file(char *filename, float *weights) {
+// 	FILE *f = fopen(filename, "rb");
+// 	if (f == NULL){
+// 		printf("ERROR: could not open %s\n",filename);
+// 		return false;
+// 	}
+// 	int read_elements = fread(weights, sizeof(float), FEATURE_COUNT, f);
+// 	fclose(f);
+	
+// 	if (read_elements != FEATURE_COUNT){
+// 		printf("ERROR: read incorrect number of weights from %s\n", filename);
+// 		return false;
+// 	}
+// 	return true;
+// }
+
+// This function is modified to cope with different weight sizes in CNN
+// Important note: weight files are in text instead of binary format!! (different from Lab1)
+// Ref: https://piazza.com/class/jfmtldn1vux3z5?cid=88
+bool read_weights_file(char *filename, float *weights, unsigned int weight_size)
+{
+	ifstream weightFile;
+	weightFile.open(filename);
+	if (!weightFile)
+	{
 		return false;
 	}
-	int read_elements = fread(weights, sizeof(float), FEATURE_COUNT, f);
-	fclose(f);
-	
-	if (read_elements != FEATURE_COUNT){
-		printf("ERROR: read incorrect number of weights from %s\n", filename);
-		return false;
+	for (int i = 0; i < weight_size; i++)
+	{
+		weightFile >> weights[i];
 	}
 	return true;
 }
