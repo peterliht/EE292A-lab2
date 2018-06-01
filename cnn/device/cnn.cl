@@ -124,11 +124,11 @@ void ConvLayer(constant float * restrict weights, constant float * restrict bias
 					{
 						for (int j_filter = 0; j_filter < filter_dim; j_filter++)
 						{
-							int idx_receptive_inputs = (col + i_filter) * in_dim * in_channels
-													 + (row + j_filter) * in_channels + ch];
-							int idx_filter_weights = i_filter * filter_dim * in_channels * num_filters
-												   + j_filter * in_channels * num_filters 
-												   + ch * num_filters + k;
+							const int idx_receptive_inputs = (col + i_filter) * in_dim * in_channels
+													       + (row + j_filter) * in_channels + ch];
+							const int idx_filter_weights = i_filter * filter_dim * in_channels * num_filters
+												         + j_filter * in_channels * num_filters 
+												         + ch * num_filters + k;
 							dotprod += inputs[idx_receptive_inputs] * weights[idx_filter_weights];
 						}
 					}
