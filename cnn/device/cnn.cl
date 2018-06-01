@@ -240,14 +240,14 @@ __kernel void linear_classifier(global const unsigned char * restrict images,
 {
 	global const unsigned char * image = &images[get_global_id(0) * IMG_SIZE];
 
-	local float padded_img[IMG_PADDED_SIZE] = 0;
-	local float conv1_out[MAXPOOL1_SIZE] = 0;
-	local float maxpool1_out[MAXPOOL1_OUT_SIZE] = 0;
-	local float conv2_in[CONV2_IN_SIZE] = 0;
-	local float conv2_out[MAXPOOL2_SIZE] = 0;
-	local float dense1_in[DENSE1_SIZE] = 0;
-	local float dense2_in[DENSE2_IN_SIZE] = 0;
-	local float softmax_node[SOFTMAX_NODE_DIM] = 0;
+	local float padded_img[IMG_PADDED_SIZE];
+	local float conv1_out[MAXPOOL1_SIZE];
+	local float maxpool1_out[MAXPOOL1_OUT_SIZE];
+	local float conv2_in[CONV2_IN_SIZE];
+	local float conv2_out[MAXPOOL2_SIZE];
+	local float dense1_in[DENSE1_SIZE];
+	local float dense2_in[DENSE2_IN_SIZE];
+	local float softmax_node[SOFTMAX_NODE_DIM];
 	// float neuron_max = -99920120210;
     float neuron_max = -INFINITY;
 	int predict = -999;  // for debugging purpose
