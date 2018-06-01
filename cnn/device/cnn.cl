@@ -51,56 +51,89 @@ float ReLU(float input)
 		return input;
 }
 
-void PaddingLayer(
-    local float * restrict inputs, local float * restrict outputs, const int in_dim,
-    const int in_channels, const int pad_dim
+// void PaddingLayer(
+//     local float * restrict inputs, local float * restrict outputs, const int in_dim,
+//     const int in_channels, const int pad_dim
+// ) {
+//     const int out_dim = in_dim + pad_dim * 2;
+// 	const int out_channels = in_channels;
+
+// 	for (int row = 0; row < out_dim; row++) {
+//         for (int col = 0; col < out_dim; col++) {
+// 			for (int channel = 0; channel < out_channels; channel++) {
+// 				const int out_index = row * out_channels * out_dim + col * out_channels + channel;
+// 				if (row >= pad_dim && col >= pad_dim && row < in_dim + pad_dim && col < in_dim + pad_dim) {
+// 					const int in_index = (row - pad_dim) * in_dim * in_channels
+//                                        + (col - pad_dim) * in_dim * in_channels + out_channels;
+// 					outputs[out_index] = inputs[in_index];
+// 				} else {
+//                     outputs[out_index] = 0.0;
+//                 }
+// 			}
+// 		}
+// 	}
+// }
+
+void pad_layer(
+    local float * restrict inputs,
+    local float * restrict outputs,
+    const int input_width,
+    const int input_height,
+    const int input_channels,
+    const int pad_width,
+    const int pad_height
 ) {
-    const int out_dim = in_dim + pad_dim * 2;
-	const int out_channels = in_channels;
+  const int OW = input_width + pad_width * 2;
+  const int OH = input_height + pad_height * 2;
+  const int OC = input_channels;
 
-	for (int row = 0; row < out_dim; row++) {
-        for (int col = 0; col < out_dim; col++) {
-			for (int channel = 0; channel < out_channels; channel++) {
-				const int out_index = row * out_channels * out_dim + col * out_channels + channel;
-				if (row >= pad_dim && col >= pad_dim && row < in_dim + pad_dim && col < in_dim + pad_dim) {
-					const int in_index = (row - pad_dim) * in_dim * in_channels
-                                       + (col - pad_dim) * in_dim * in_channels + out_channels;
-					outputs[out_index] = inputs[in_index];
-				} else {
-                    outputs[out_index] = 0.0;
-                }
-			}
-		}
-	}
+  for (int w = 0; w < OW; w++) {
+    for (int h = 0; h < OH; h++) {
+      for (int c = 0; c < input_channels; c++) {
+        const int o_idx = w * OC * OH + h * OC + c;
+        if (w >= pad_width && h >= pad_height
+            && w < input_width + pad_width 
+            && h < input_height + pad_height) {
+          const int ih = h - pad_height;
+          const int iw = w - pad_width;
+          const int i_idx = iw * input_height * input_channels + ih
+            * input_channels + c;
+          outputs[o_idx] =  inputs[i_idx];
+        } else {
+          outputs[o_idx] = 0;
+        }
+      }
+    }
+  }
 }
 
-// image padding needs to be handled differently due to float vs. char data representations
-void PaddingImage(global const unsigned char * inputs, local float * restrict outputs,
-				  int in_dim, int in_channels, int pad_dim)
-{
-    const int out_dim = in_dim + pad_dim * 2;
-	const int out_channels = in_channels;
-	for (int row = 0; row < out_dim; row++)
-	{
-		for (int col = 0; col < out_dim; col++)
-		{
-			for (int channel = 0; channel < out_channels; channel++)
-			{
-				const int out_index = row * out_channels * out_dim + col * out_channels + channel;
-				if (row >= pad_dim && col >= pad_dim && row < in_dim + pad_dim && col < in_dim + pad_dim)
-				{
-					const int in_index = (row - pad_dim) * in_dim * in_channels
-                                       + (col - pad_dim) * in_dim * in_channels + out_channels;
-					outputs[out_index] = inputs[in_index];
-				}
-				else
-                {
-                    outputs[out_index] = 0.0;
-                }
-			}
-		}
-	}
-}
+// // image padding needs to be handled differently due to float vs. char data representations
+// void PaddingImage(global const unsigned char * inputs, local float * restrict outputs,
+// 				  int in_dim, int in_channels, int pad_dim)
+// {
+//     const int out_dim = in_dim + pad_dim * 2;
+// 	const int out_channels = in_channels;
+// 	for (int row = 0; row < out_dim; row++)
+// 	{
+// 		for (int col = 0; col < out_dim; col++)
+// 		{
+// 			for (int channel = 0; channel < out_channels; channel++)
+// 			{
+// 				const int out_index = row * out_channels * out_dim + col * out_channels + channel;
+// 				if (row >= pad_dim && col >= pad_dim && row < in_dim + pad_dim && col < in_dim + pad_dim)
+// 				{
+// 					const int in_index = (row - pad_dim) * in_dim * in_channels
+//                                        + (col - pad_dim) * in_dim * in_channels + out_channels;
+// 					outputs[out_index] = inputs[in_index];
+// 				}
+// 				else
+//                 {
+//                     outputs[out_index] = 0.0;
+//                 }
+// 			}
+// 		}
+// 	}
+// }
 
 void ConvLayer(constant float * restrict weights, constant float * restrict bias,
 				local const float * restrict inputs, local float * restrict outputs,
